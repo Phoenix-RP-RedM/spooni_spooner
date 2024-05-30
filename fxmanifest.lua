@@ -20,7 +20,8 @@ server_scripts {
 }
 
 client_scripts {
-	'@uiprompt/uiprompt.lua',
+	'@Phoenix-Core/[ Utilities ]/Utils.lua',
+	'@Phoenix--Interaction/[ Client ]/[ Prompt ]/UIPrompt.lua',
 	'client/slaxml.lua',
 	'client/client.lua',
 	'data/rdr3/*.lua',
@@ -30,4 +31,4 @@ shared_scripts {
 	'shared/*.lua',
 }
 
-dependency 'uiprompt'
+dependency 'Phoenix--Interaction'
