@@ -21,7 +21,7 @@ server_scripts {
 
 client_scripts {
 	'@Phoenix-Core/[ Utilities ]/Utils.lua',
-	'@Phoenix--Interaction/[ Client ]/[ Prompt ]/UIPrompt.lua',
+	'@Phoenix--UI/[ Client ]/[ Prompt ]/UIPrompt.lua',
 	'client/slaxml.lua',
 	'client/client.lua',
 	'data/rdr3/*.lua',
@@ -31,4 +31,4 @@ shared_scripts {
 	'shared/*.lua',
 }
 
-dependency 'Phoenix--Interaction'
+dependency 'Phoenix--UI'
