@@ -30,5 +30,3 @@ client_scripts {
 shared_scripts {
 	'shared/*.lua',
 }
-
-dependency 'Phoenix--Interaction'
