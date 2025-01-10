@@ -1,5 +1,5 @@
 # 💻 Spooner
-Documentation relating to the spooni_spooner.
+Documentation relating to the [spooni_spooner](https://github.com/Spooni-Development/spooni_spooner).
 
 ## 1. Installation
 spooni_spooner works Standalone. 
@@ -21,15 +21,15 @@ To install spooni_spooner:
   ```
 - Or define the permission yourself
   ```
-  add_ace group.admin spooni_spooner.view allow
-  add_ace group.admin spooni_spooner.spawn allow
-  add_ace group.admin spooni_spooner.modify.own allow
-  add_ace group.admin spooni_spooner.delete.own allow
-  add_ace group.admin spooni_spooner.properties allow
+  add_ace group.admin spooner.view allow
+  add_ace group.admin spooner.spawn allow
+  add_ace group.admin spooner.modify.own allow
+  add_ace group.admin spooner.delete.own allow
+  add_ace group.admin spooner.properties allow
 
-  add_ace group.admin spooni_spooner.noEntityLimit allow
-  add_ace group.admin spooni_spooner.modify.other allow
-  add_ace group.admin spooni_spooner.delete.other allow
+  add_ace group.admin spooner.noEntityLimit allow
+  add_ace group.admin spooner.modify.other allow
+  add_ace group.admin spooner.delete.other allow
   ```
 - At the end
   - Restart the server
@@ -111,13 +111,14 @@ Checking the **Save/Load deletions** box will save what entities you delete, and
 
 The **Import/Export** menu allows you to import and export databases in a number of different formats:
 
-| Format | Description | Export? | Import? |
-|--------|-------------|---------|---------|
+| Format          | Description | Export? | Import? |
+|-----------------|-------------|---------|---------|
+| YMAP            | Native map format used by RDR2 | Yes | Yes |
+| Prop Loader     | Format used by the [spooni_prop_loader](https://spooni-mapping.tebex.io/package/6284606) resource | Yes | Yes |
+| Map Editor XML  | XML format used by the [Lambdarevolution map editor](https://allmods.net/red-dead-redemption-2/tools-red-dead-redemption-2/rdr2-map-editor-v0-10/) and the [objectloader](https://github.com/kibook/redm-objectloader) resource | Yes | Yes |
 | Spooner DB JSON | The native format used by the spooner | Yes | Yes |
-| Map Editor XML | XML format used by the [Lambdarevolution map editor](https://allmods.net/red-dead-redemption-2/tools-red-dead-redemption-2/rdr2-map-editor-v0-10/) and the [objectloader](https://github.com/kibook/redm-objectloader) resource | Yes | No |
-| Ymap | Native map format used by RDR2 | Yes | No |
+| Spooner Backup  | Backup of all spooner databases | Yes | Yes |
 | propplacer JSON | [RedEM:RP propplacer](https://github.com/RedEM-RP/redemrp_propplacer) JSON database | Yes | No |
-| Spooner Backup | Backup of all spooner databases | Yes | Yes |
 
 To export, select the desired format and click **Export**. The output will be displayed in the text box, and you can copy it to save it to an external file.
 

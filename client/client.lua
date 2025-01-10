@@ -27,13 +27,13 @@ if Config.isRDR then
 	ClearTasksPrompt = Uiprompt:new(`INPUT_INTERACT_NEG`, "Clear Tasks", SpoonerPrompts)
 	ClearTasksPrompt:setHoldMode(true)
 	ClearTasksPrompt:setOnHoldModeJustCompleted(function()
-	       TryClearTasks(PlayerPedId())
+	    TryClearTasks(PlayerPedId())
 	end)
 
 	DetachPrompt = Uiprompt:new(`INPUT_INTERACT_LEAD_ANIMAL`, "Detach", SpoonerPrompts)
 	DetachPrompt:setHoldMode(true)
 	DetachPrompt:setOnHoldModeJustCompleted(function()
-	       TryDetach(PlayerPedId())
+	    TryDetach(PlayerPedId())
 	end)
 end
 
@@ -324,38 +324,6 @@ function GetInView(x1, y1, z1, pitch, roll, yaw)
 	end
 
 	return endCoords, entityHit, distance
-end
-
-function GetModelName(model)
-	for _, name in ipairs(Peds) do
-		if model == GetHashKey(name) then
-			return name
-		end
-	end
-
-	for _, name in ipairs(Vehicles) do
-		if model == GetHashKey(name) then
-			return name
-		end
-	end
-
-	for _, name in ipairs(Objects) do
-		if model == GetHashKey(name) then
-			return name
-		end
-	end
-	for _, name in ipairs(Spooni) do
-		if model == GetHashKey(name) then
-			return name
-		end
-	end
-	for _, name in ipairs(Pickups) do
-		if model == GetHashKey(name) then
-			return name
-		end
-	end
-
-	return tostring(model)
 end
 
 function GetModelName(model)
@@ -787,7 +755,7 @@ function SpawnVehicle(name, model, x, y, z, pitch, roll, yaw, collisionDisabled,
 	end
 
 	-- Weird fix for the hot air balloon, otherwise it doesn't move with the wind and only travels straight up.
-	if model == GetHashKey('hotairballoon01') then
+	if model == joaat('hotairballoon01') then
 		SetVehicleAsNoLongerNeeded(veh)
 	end
 
@@ -820,7 +788,7 @@ end
 
 local function startScenario(ped, scenario)
 	if Config.isRDR then
-		TaskStartScenarioInPlace(ped, GetHashKey(scenario), -1)
+		TaskStartScenarioInPlace(ped, joaat(scenario), -1)
 	else
 		TaskStartScenarioInPlace(ped, scenario, -1)
 	end
@@ -889,9 +857,9 @@ function SpawnPed(props)
 	if props.weapons then
 		for _, weapon in ipairs(props.weapons) do
 			if Config.isRDR then
-				GiveWeaponToPed_2(ped, GetHashKey(weapon), 500, true, false, 0, false, 0.5, 1.0, 0, false, 0.0, false)
+				GiveWeaponToPed_2(ped, joaat(weapon), 500, true, false, 0, false, 0.5, 1.0, 0, false, 0.0, false)
 			else
-				GiveWeaponToPed(ped, GetHashKey(weapon), 500, false, true)
+				GiveWeaponToPed(ped, joaat(weapon), 500, false, true)
 			end
 		end
 	end
@@ -1018,7 +986,16 @@ function RequestControl(entity)
 		return
 	end
 
-	NetworkRequestControlOfEntity(entity)
+	if DoesEntityExist(entity) and not NetworkHasControlOfEntity(entity) then
+		NetworkRequestControlOfEntity(entity)
+
+		local t = 100
+
+		while not NetworkHasControlOfEntity(entity) and t > 0 do 
+			Wait(0)
+			t = t - 1
+		end
+	end
 end
 
 function CanDeleteEntity(entity)
@@ -1109,17 +1086,8 @@ RegisterNUICallback('closeSpawnMenu', function(data, cb)
 	cb({})
 end)
 
-function Contains(list, item)
-	for _, value in ipairs(list) do
-		if value == item then
-			return true
-		end
-	end
-	return false
-end
-
 RegisterNUICallback('closePedMenu', function(data, cb)
-	if data.modelName and (Permissions.spawn.byName or Contains(Peds, data.modelName)) then
+	if data.modelName and (Permissions.spawn.byName or PedsHashLookup[joaat(data.modelName)]) then
 		CurrentSpawn = {
 			modelName = data.modelName,
 			type = 1
@@ -1130,7 +1098,7 @@ RegisterNUICallback('closePedMenu', function(data, cb)
 end)
 
 RegisterNUICallback('closeVehicleMenu', function(data, cb)
-	if data.modelName and (Permissions.spawn.byName or Contains(Vehicles, data.modelName)) then
+	if data.modelName and (Permissions.spawn.byName or VehiclesHashLookup[joaat(data.modelName)]) then
 		CurrentSpawn = {
 			modelName = data.modelName,
 			type = 2
@@ -1141,7 +1109,7 @@ RegisterNUICallback('closeVehicleMenu', function(data, cb)
 end)
 
 RegisterNUICallback('closeObjectMenu', function(data, cb)
-	if data.modelName and (Permissions.spawn.byName or Contains(Objects, data.modelName)) then
+	if data.modelName and (Permissions.spawn.byName or ObjectsHashLookup[joaat(data.modelName)]) then
 		CurrentSpawn = {
 			modelName = data.modelName,
 			type = 3
@@ -1152,7 +1120,7 @@ RegisterNUICallback('closeObjectMenu', function(data, cb)
 end)
 
 RegisterNUICallback('closeSpooniMenu', function(data, cb)
-	if data.modelName and (Permissions.spawn.byName or Contains(Spooni, data.modelName)) then
+	if data.modelName and (Permissions.spawn.byName or SpooniHashLookup[joaat(data.modelName)]) then
 		CurrentSpawn = {
 			modelName = data.modelName,
 			type = 3
@@ -1163,7 +1131,7 @@ RegisterNUICallback('closeSpooniMenu', function(data, cb)
 end)
 
 RegisterNUICallback('closePropsetMenu', function(data, cb)
-	if data.modelName and (Permissions.spawn.byName or Contains(Propsets, data.modelName)) then
+	if data.modelName and (Permissions.spawn.byName or PropsetsHashLookup[joaat(data.modelName)]) then
 		CurrentSpawn = {
 			modelName = data.modelName,
 			type = 4
@@ -1174,7 +1142,7 @@ RegisterNUICallback('closePropsetMenu', function(data, cb)
 end)
 
 RegisterNUICallback('closePickupMenu', function(data, cb)
-	if data.modelName and (Permissions.spawn.byName or Contains(Pickups, data.modelName)) then
+	if data.modelName and (Permissions.spawn.byName or PickupsHashLookup[joaat(data.modelName)]) then
 		CurrentSpawn = {
 			modelName = data.modelName,
 			type = 5
@@ -1515,7 +1483,7 @@ function AttachEntity(from, to, bone, x, y, z, pitch, roll, yaw, useSoftPinning,
 	end
 end
 
-function LoadDatabase(db, relative, replace, isOffsetPlacement)
+function LoadDatabase(db, relative, replace, isOffsetPlacement, dataType)
 	if replace then
 		RemoveAllFromDatabase()
 	end
@@ -1540,15 +1508,23 @@ function LoadDatabase(db, relative, replace, isOffsetPlacement)
 		end
 	end
 
-	for entity, props in pairs(db.spawn) do
-		if relative then
-			ax = ax + props.x
-			ay = ay + props.y
-			az = az + props.z
-		end
+	local spawnData = (dataType == "script" and db.spawn.spawn) or db.spawn
 
-		table.insert(spawns, {entity = tonumber(entity), props = props})
-	end
+    for entity, props in pairs(spawnData) do
+        local entityProps = props.props or props
+
+        if entityProps.x and entityProps.y and entityProps.z then
+            if relative then
+                ax = ax + entityProps.x
+                ay = ay + entityProps.y
+                az = az + entityProps.z
+            end
+
+            table.insert(spawns, {entity = tonumber(entity), props = entityProps})
+        else
+            print("!! missing prop positions in entity: " .. tostring(entity))
+        end
+    end
 
 	local dx, dy, dz
 
@@ -1623,9 +1599,10 @@ function LoadDatabase(db, relative, replace, isOffsetPlacement)
 			local x = spawn.props.quaternion.x
 			local y = spawn.props.quaternion.y
 			local z = spawn.props.quaternion.z
-			local w = -spawn.props.quaternion.w
+			local w
+			if spawn.props.quaternion.w ~= nil then w = spawn.props.quaternion.w  SetEntityQuaternion(handles[spawn.entity], x, y, z, -w) else w = nil end
 
-			SetEntityQuaternion(handles[spawn.entity], x, y, z, w)
+			
 		end
 
 		if spawn.props.attachment and spawn.props.attachment.to ~= 0 then
@@ -1699,7 +1676,6 @@ function GetSavedDatabases()
 
 	while true do
 		local kvp = FindKvp(handle)
-
 		if kvp then
 			table.insert(dbs, string.sub(kvp, 4))
 		else
@@ -1885,6 +1861,103 @@ RegisterNUICallback('attackPed', function(data, cb)
 	cb {}
 end)
 
+function joaat_hash(input)
+    local hash = 0
+    for i = 1, #input do
+        local char = string.byte(input, i)
+        hash = (hash + char) & 0xFFFFFFFF
+        hash = (hash + (hash << 10)) & 0xFFFFFFFF
+        hash = (hash ~ (hash >> 6)) & 0xFFFFFFFF
+    end
+    hash = (hash + (hash << 3)) & 0xFFFFFFFF
+    hash = (hash ~ (hash >> 11)) & 0xFFFFFFFF
+    hash = (hash + (hash << 15)) & 0xFFFFFFFF
+    return hash & 0xFFFFFFFF
+end
+
+local doorCounter = 1
+
+function GenerateDoorhashText(baseText)
+    local doorhash_text = baseText .. "-" .. doorCounter
+    doorCounter = doorCounter + 1
+    return doorhash_text
+end
+
+function KeyboardInput(TextEntry, ExampleText, MaxStringLenght)
+    AddTextEntry('FMMC_KEY_TIP1', TextEntry)
+    DisplayOnscreenKeyboard(0, "FMMC_KEY_TIP1", "", ExampleText, "", "", "", MaxStringLenght)
+
+    while UpdateOnscreenKeyboard() ~= 1 and UpdateOnscreenKeyboard() ~= 2 do
+        Citizen.Wait(0)
+    end
+
+    if UpdateOnscreenKeyboard() ~= 2 then
+        local result = GetOnscreenKeyboardResult()
+        Citizen.Wait(100)
+        return result or false
+    else
+        Citizen.Wait(100)
+        return false
+    end
+end
+
+function ConvertDatabaseToDoorhash(database, content)
+    local baseText = KeyboardInput("Enter the base name for the doorhashes:", "", 50)
+
+    if not baseText then return content end
+
+    local original_string = content
+    local result = original_string:gsub('(<Item type="CEntityDef">.-<archetypeName>(.-)</archetypeName>.-<artificialAmbientOcclusion value="255"/>%s*)',function(item, archetypeName)
+		local doorhash_text = GenerateDoorhashText(baseText)
+		local doorhash = joaat_hash(doorhash_text)
+		local extensions_block = [[
+			<extensions>
+				<Item type="CExtensionDefDoor">
+					<name>]] .. archetypeName .. [[</name>
+					<offsetPosition x="0" y="0" z="0" />
+					<ELUGHoA_0xDAF8214E value="false" />
+					<enableLimitAngle value="true" />
+					<EFwMwAA_0x091A42D0 value="false" />
+					<startsLocked value="false" />
+					<canBreak value="false" />
+					<PkpciBA_0xA37CAB71 value="false" />
+					<dKbmTLA_0xCFE37BDB value="1.570796" />
+					<nuskEbA_0xA0CF3C8D value="1.570796" />
+					<RbUnQLA_0x9C555ECF value="0" />
+					<OPkNlHA_0xBCA0289E value="0" />
+					<doorTargetRatio value="0" />
+					<audioHash>ismdclsa_0x725d11b6</audioHash>
+					<doorTags>
+						<Item />
+						<Item />
+						<Item />
+						<Item />
+					</doorTags>
+				</Item>
+				<Item type="SSxlGTA_0xDB12012B">
+					<name>]] .. archetypeName .. [[</name>
+					<offsetPosition x="0" y="0" z="0" />
+					<Id>]] .. doorhash_text .. [[</Id> <!-- hash = ]] .. doorhash .. [[ -->
+				</Item>
+			</extensions>
+		]]
+
+		local flags = 1572865
+		local lodDist = 150
+		local childLodDist = 0
+		local modified_item = item
+			:gsub('<flags value="%d+"/>', '<flags value="' .. flags .. '"/>')
+			:gsub('<lodDist value="%d+"/>', '<lodDist value="' .. lodDist .. '"/>')
+			:gsub('<childLodDist value="%d+"/>', '<childLodDist value="' .. childLodDist .. '"/>')
+
+		return modified_item .. extensions_block
+	end)
+
+    doorCounter = 1
+    return result
+end
+
+
 function ConvertDatabaseToMapEditorXml(creator, database)
 	local xml = '<?xml version="1.0"?>\n<Map>\n\t<MapMeta Creator="' .. creator .. '"/>\n'
 
@@ -1973,8 +2046,8 @@ function ConvertDatabaseToYmap(database)
 			entitiesXml = entitiesXml .. '\t\t\t<scaleXY value="1"/>\n'
 			entitiesXml = entitiesXml .. '\t\t\t<scaleZ value="1"/>\n'
 			entitiesXml = entitiesXml .. '\t\t\t<parentIndex value="-1"/>\n'
-			entitiesXml = entitiesXml .. '\t\t\t<lodDist value="500"/>\n'
-			entitiesXml = entitiesXml .. '\t\t\t<childLodDist value="500"/>\n'
+			entitiesXml = entitiesXml .. '\t\t\t<lodDist value="150"/>\n'
+			entitiesXml = entitiesXml .. '\t\t\t<childLodDist value="0"/>\n'
 			entitiesXml = entitiesXml .. '\t\t\t<lodLevel>LODTYPES_DEPTH_HD</lodLevel>\n'
 			entitiesXml = entitiesXml .. '\t\t\t<numChildren value="0"/>\n'
 			entitiesXml = entitiesXml .. '\t\t\t<ambientOcclusionMultiplier value="255"/>\n'
@@ -2011,7 +2084,7 @@ function ConvertDatabaseToMlo(database)
 			local q = toQuaternion(properties.pitch, properties.roll, properties.yaw)
 			
 
-			properties.z2 = properties.z - (103.520000)
+			properties.z2 = properties.z - (120.0000)
 			
 
 			if not minX or properties.x < minX then
@@ -2038,7 +2111,6 @@ function ConvertDatabaseToMlo(database)
 			if properties.isFrozen then
 				flags = flags + 32
 			end
-                        
 
 			entitiesXml = entitiesXml .. '\t\t<Item type="CEntityDef">\n'
 			entitiesXml = entitiesXml .. '\t\t\t<archetypeName>' .. properties.name .. '</archetypeName>\n'
@@ -2048,8 +2120,8 @@ function ConvertDatabaseToMlo(database)
 			entitiesXml = entitiesXml .. '\t\t\t<scaleXY value="1"/>\n'
 			entitiesXml = entitiesXml .. '\t\t\t<scaleZ value="1"/>\n'
 			entitiesXml = entitiesXml .. '\t\t\t<parentIndex value="-1"/>\n'
-			entitiesXml = entitiesXml .. '\t\t\t<lodDist value="150"/>\n'
-			entitiesXml = entitiesXml .. '\t\t\t<childLodDist value="150"/>\n'
+			entitiesXml = entitiesXml .. '\t\t\t<lodDist value="30"/>\n'
+			entitiesXml = entitiesXml .. '\t\t\t<childLodDist value="0"/>\n'
 			entitiesXml = entitiesXml .. '\t\t\t<lodLevel>LODTYPES_DEPTH_HD</lodLevel>\n'
 			entitiesXml = entitiesXml .. '\t\t\t<numChildren value="0"/>\n'
 			entitiesXml = entitiesXml .. '\t\t\t<ambientOcclusionMultiplier value="255"/>\n'
@@ -2167,7 +2239,7 @@ local function loadOffset(file)
 	for index, value in ipairs(data) do
 		db[#db+1] = {
 			name = value.model,
-			model = GetHashKey(value.model),
+			model = joaat(value.model),
 			isFrozen = value.isFrozen,
 			x = value.offset.x+coords.x,
 			y = value.offset.y+coords.y,
@@ -2233,7 +2305,7 @@ local function loadYmap(xml)
 			if isEntity then
 				if curElem == "archetypeName" then
 					db[key].name = text
-					db[key].model = GetHashKey(text)
+					db[key].model = joaat(text)
 				end
 			end
 		end
@@ -2244,7 +2316,186 @@ local function loadYmap(xml)
 	LoadDatabase(db, false, false)
 end
 
-function ExportDatabase(format)
+local function loadXml(xml)
+    local curElem, isEntity
+
+    local db = {spawn = {}, delete = {}}
+    local i = 0
+    local key = "0"
+
+    local parser = SLAXML:parser {
+        startElement = function(name, nsURI, nsPrefix)
+            curElem = name
+        end,
+        attribute = function(name, value, nsURI, nsPrefix)
+            if curElem == "DeletedObject" then
+                if not db.delete[key] then
+                    db.delete[key] = {
+						quaternion = {},
+                        x = 0.0,
+                        y = 0.0,
+                        z = 0.0,
+                        pitch = 0.0,
+                        roll = 0.0,
+                        yaw = 0.0
+                    }
+                end
+				if name == "Position_x" then
+                    db.delete[key].x = tonumber(value) or 0.0
+                elseif name == "Position_y" then
+                    db.delete[key].y = tonumber(value) or 0.0
+                elseif name == "Position_z" then
+                    db.delete[key].z = tonumber(value) or 0.0
+                elseif name == "Rotation_x" then
+                    db.delete[key].pitch = tonumber(value) or 0.0
+                elseif name == "Rotation_y" then
+                    db.delete[key].roll = tonumber(value) or 0.0
+                elseif name == "Rotation_z" then
+                    db.delete[key].yaw = tonumber(value) or 0.0
+                elseif name == "Rotation_w" then
+                    db.delete[key].quaternion.w = tonumber(value) or 0.0
+                elseif name == "Rotation_qx" then
+                    db.delete[key].quaternion.x = tonumber(value) or 0.0
+                elseif name == "Rotation_qy" then
+                    db.delete[key].quaternion.y = tonumber(value) or 0.0
+                elseif name == "Rotation_qz" then
+                    db.delete[key].quaternion.z = tonumber(value) or 0.0
+                elseif name == "Hash" then
+                    db.delete[key].model = tonumber(value) or joaat(value)
+                elseif name == "Collision" then
+                    db.delete[key].collisionDisabled = value == "false"
+                elseif name == "Visible" then
+                    db.delete[key].isVisible = value == "true"
+                end
+                db.delete[key][name] = tonumber(value) or value
+            elseif curElem == "Object" then
+                if not db.spawn[key] then
+                    db.spawn[key] = {
+                        quaternion = {},
+                        x = 0.0,
+                        y = 0.0,
+                        z = 0.0,
+                        pitch = 0.0,
+                        roll = 0.0,
+                        yaw = 0.0
+                    }
+                end
+                if name == "Position_x" then
+                    db.spawn[key].x = tonumber(value) or 0.0
+                elseif name == "Position_y" then
+                    db.spawn[key].y = tonumber(value) or 0.0
+                elseif name == "Position_z" then
+                    db.spawn[key].z = tonumber(value) or 0.0
+                elseif name == "Rotation_x" then
+                    db.spawn[key].pitch = tonumber(value) or 0.0
+                elseif name == "Rotation_y" then
+                    db.spawn[key].roll = tonumber(value) or 0.0
+                elseif name == "Rotation_z" then
+                    db.spawn[key].yaw = tonumber(value) or 0.0
+                elseif name == "Rotation_w" then
+                    db.spawn[key].quaternion.w = tonumber(value) or 0.0
+                elseif name == "Rotation_qx" then
+                    db.spawn[key].quaternion.x = tonumber(value) or 0.0
+                elseif name == "Rotation_qy" then
+                    db.spawn[key].quaternion.y = tonumber(value) or 0.0
+                elseif name == "Rotation_qz" then
+                    db.spawn[key].quaternion.z = tonumber(value) or 0.0
+                elseif name == "Hash" then
+                    db.spawn[key].model = tonumber(value) or joaat(value)
+                elseif name == "Collision" then
+                    db.spawn[key].collisionDisabled = value == "false"
+                elseif name == "Visible" then
+                    db.spawn[key].isVisible = value == "true"
+                end
+            end
+        end,
+        closeElement = function(name, nsURI)
+            if name == "DeletedObject" then
+                i = i + 1
+                key = tostring(i)
+            elseif name == "Object" then
+                i = i + 1
+                key = tostring(i)
+            end
+            curElem = nil
+        end,
+        text = function(text, cdata)
+        end
+    }
+
+    parser:parse(xml, {stripWhitespace=true})
+
+    for key, props in pairs(db.delete) do
+        local x, y, z = props.x, props.y, props.z
+        local model = props.model
+        local closestObject = GetClosestObjectOfType(x, y, z, 1.0, model, false, false, false)
+        if DoesEntityExist(closestObject) then
+            DeleteEntity(closestObject)
+        end
+    end
+
+    LoadDatabase(db, false, false)
+end
+
+local function cleanXml(xml)
+	xml = xml:gsub("Config%s*=%s*{}", "")
+    xml = xml:gsub("}%s*Config%.Objects%d*%s*=%s*{", ",")
+    xml = xml:gsub("Config%.Objects%d*%s*=%s*{", "{")
+    xml = xml:gsub("^objects%s*=%s*", "")
+    xml = xml:gsub(",%s*}", ",}") 
+    xml = xml:gsub("^%s*,", "")
+    --xml = xml:gsub(",%s*\n", "\n")
+    xml = xml:gsub(",%s*$", "")
+
+    return xml
+end
+
+local function loadScript(xml)
+	xml = cleanXml(xml)
+	--xml = xml:gsub("^objects%s*=%s*", "")
+    local func, err = load("return " .. xml)
+    if not func then
+        print("error converting to lua table", err)
+        return
+    end
+
+    local parsedXml = func()
+    if not parsedXml then
+        print("Error: Failed to load parsed XML data.")
+        return
+    end
+    local db = { spawn = {} }
+    local i = 0
+
+    for _, object in ipairs(parsedXml) do
+        if object.coords and object.coords.x and object.coords.y and object.coords.z and
+           object.rotation and object.rotation.x and object.rotation.y and object.rotation.z then
+            i = i + 1
+            local key = tostring(i)
+
+            db.spawn[key] = {
+                quaternion = {},
+                props = {
+                    x = object.coords.x,
+                    y = object.coords.y,
+                    z = object.coords.z,
+                    pitch = object.rotation.x,
+                    roll = object.rotation.y,
+                    yaw = object.rotation.z,
+                    model = joaat(object.model),
+                    collisionDisabled = false,
+                    isVisible = true
+                }
+            }
+        else
+            print("!! skipping object with missing values")
+        end
+    end
+	local dataType = "script"
+    LoadDatabase(db, false, false, false, dataType)
+end
+
+function ExportDatabase(format, content)
 	UpdateDatabase()
 
 	local db = PrepareDatabaseForSave()
@@ -2263,6 +2514,8 @@ function ExportDatabase(format)
 		return ConvertDatabaseToOffset(db)
 	elseif format == 'propplacer' then
 		return ConvertDatabaseToPropPlacerJson(db)
+	elseif format == 'doorhash' then
+		return ConvertDatabaseToDoorhash(db, content)
 	elseif format == 'backup' then
 		return BackupDbs()
 	end
@@ -2279,16 +2532,21 @@ function ImportDatabase(format, content)
 		RestoreDbs(content)
 	elseif format == 'ymap' then
 		loadYmap(content)
+	elseif format == 'map-editor-xml' then
+		loadXml(content)
 	elseif format == 'offset' then
 		loadOffset(content)
+	elseif format == 'script' then
+        loadScript(content)
 	end
 end
 
 RegisterNUICallback('exportDb', function(data, cb)
-	cb(ExportDatabase(data.format))
+	cb(ExportDatabase(data.format, data.content))
 end)
 
 RegisterNUICallback('importDb', function(data, cb)
+	print(data.format)
 	ImportDatabase(data.format, data.content)
 	cb({})
 end)
@@ -2533,9 +2791,9 @@ RegisterNUICallback('giveWeapon', function(data, cb)
 		RequestControl(data.handle)
 
 		if Config.isRDR then
-			GiveWeaponToPed_2(data.handle, GetHashKey(data.weapon), 500, true, false, 0, false, 0.5, 1.0, 0, false, 0.0, false)
+			GiveWeaponToPed_2(data.handle, joaat(data.weapon), 500, true, false, 0, false, 0.5, 1.0, 0, false, 0.0, false)
 		else
-			GiveWeaponToPed(data.handle, GetHashKey(data.weapon), 500, false, true)
+			GiveWeaponToPed(data.handle, joaat(data.weapon), 500, false, true)
 		end
 
 		if Database[data.handle] then
@@ -2683,7 +2941,7 @@ end)
 
 RegisterNUICallback('setPlayerModel', function(data, cb)
 	if Permissions.properties.ped.changeModel and data.modelName then
-		local model = GetHashKey(data.modelName)
+		local model = joaat(data.modelName)
 
 		if LoadModel(model) then
 			SetPlayerModel(PlayerId(), model, true)
@@ -2846,7 +3104,7 @@ function TryClonePed(handle)
 	if Permissions.properties.ped.clone and CanModifyEntity(handle) then
 		RequestControl(handle)
 		local clone = CloneEntity(handle)
-		Citizen.Wait(500)
+		Wait(500)
 		ClonePedToTarget(handle, clone)
 	end
 end
@@ -3049,8 +3307,8 @@ function MainSpoonerUpdates()
 
         if MessageInterval then
             MessageInterval = false
-            Citizen.CreateThread(function()
-                Citizen.Wait(MessageRate)
+            CreateThread(function()
+                Wait(MessageRate)
                 MessageInterval = true
             end)
 			SendNUIMessage({
@@ -3168,7 +3426,7 @@ function MainSpoonerUpdates()
 			if CurrentSpawn.type == 1 then
 				entity = SpawnPed{
 					name = CurrentSpawn.modelName,
-					model = GetHashKey(CurrentSpawn.modelName),
+					model = joaat(CurrentSpawn.modelName),
 					x = spawnPos.x,
 					y = spawnPos.y,
 					z = spawnPos.z,
@@ -3183,15 +3441,15 @@ function MainSpoonerUpdates()
 				}
 
 			elseif CurrentSpawn.type == 2 then
-				entity = SpawnVehicle(CurrentSpawn.modelName, GetHashKey(CurrentSpawn.modelName), spawnPos.x, spawnPos.y, spawnPos.z, 0.0, 0.0, yaw2, false, true)
+				entity = SpawnVehicle(CurrentSpawn.modelName, joaat(CurrentSpawn.modelName), spawnPos.x, spawnPos.y, spawnPos.z, 0.0, 0.0, yaw2, false, true)
 			elseif CurrentSpawn.type == 3 then
-				entity = SpawnObject(CurrentSpawn.modelName, GetHashKey(CurrentSpawn.modelName), spawnPos.x, spawnPos.y, spawnPos.z, 0.0, 0.0, yaw2, false, true, nil, nil, nil)
+				entity = SpawnObject(CurrentSpawn.modelName, joaat(CurrentSpawn.modelName), spawnPos.x, spawnPos.y, spawnPos.z, 0.0, 0.0, yaw2, false, true, nil, nil, nil)
 			elseif CurrentSpawn.type == 4 then
-				entity = SpawnPropset(CurrentSpawn.modelName, GetHashKey(CurrentSpawn.modelName), spawnPos.x, spawnPos.y, spawnPos.z, yaw2)
+				entity = SpawnPropset(CurrentSpawn.modelName, joaat(CurrentSpawn.modelName), spawnPos.x, spawnPos.y, spawnPos.z, yaw2)
 			elseif CurrentSpawn.type == 5 then
-				entity = SpawnPickup(CurrentSpawn.modelName, GetHashKey(CurrentSpawn.modelName), spawnPos.x, spawnPos.y, spawnPos.z)
+				entity = SpawnPickup(CurrentSpawn.modelName, joaat(CurrentSpawn.modelName), spawnPos.x, spawnPos.y, spawnPos.z)
 			elseif CurrentSpawn.type == 3 then
-				entity = SpawnSpooni(CurrentSpawn.modelName, GetHashKey(CurrentSpawn.modelName), spawnPos.x, spawnPos.y, spawnPos.z, 0.0, 0.0, yaw2, false, true, nil, nil, nil)
+				entity = SpawnSpooni(CurrentSpawn.modelName, joaat(CurrentSpawn.modelName), spawnPos.x, spawnPos.y, spawnPos.z, 0.0, 0.0, yaw2, false, true, nil, nil, nil)
 			end
 
 			if entity then
@@ -3620,7 +3878,7 @@ function UpdateDbEntities()
 		end
 
 		if properties.scenario then
-			local hash = GetHashKey(properties.scenario)
+			local hash = joaat(properties.scenario)
 
 			if not IsPedUsingScenarioHash(entity, hash) then
 				startScenario(entity, properties.scenario)
@@ -3706,7 +3964,7 @@ function IsPromptCompleted(group,key)
       return true
     end
   else
-    if IsControlJustPressed(0,GetHashKey(key)) then
+    if IsControlJustPressed(0,joaat(key)) then
       Wait(0)
       return true
     end
@@ -3723,7 +3981,7 @@ function CreatePromptButton(group, str, key, holdTime)
     }
   end
   promptGroups[group].prompts[key] = PromptRegisterBegin()
-  PromptSetControlAction(promptGroups[group].prompts[key], GetHashKey(key))
+  PromptSetControlAction(promptGroups[group].prompts[key], joaat(key))
   str = CreateVarString(10, 'LITERAL_STRING', str)
   PromptSetText(promptGroups[group].prompts[key], str)
   PromptSetEnabled(promptGroups[group].prompts[key], true)
@@ -3809,7 +4067,7 @@ function CreateObjects(data, flag, distance)
     local callback = promise.new()
     local previousCoord = Origin
 
-    Citizen.CreateThread(function()
+    CreateThread(function()
         while true do
             Wait(loopFast)
 
@@ -3825,21 +4083,21 @@ function CreateObjects(data, flag, distance)
             end
 
             if IsControlPressed(0,`INPUT_SELECT_PREV_WEAPON`) then
-                local NewAngle = (ObjectHeading - 5 + 360)%360
+                local NewAngle = (ObjectHeading - 1 + 360)%360
                 ObjectRotate(entities,ObjectHeading,ObjectOrigin,NewAngle)
             end
 
             if IsControlPressed(0,`INPUT_SELECT_NEXT_WEAPON`) then
-                local NewAngle = (ObjectHeading + 5)%360
+                local NewAngle = (ObjectHeading + 1)%360
                 ObjectRotate(entities,ObjectHeading,ObjectOrigin,NewAngle)
             end
 			
             if IsControlPressed(0,`INPUT_FRONTEND_UP`) then
-				zValue = zValue + 0.1
+				zValue = zValue + 0.05
             end
 			
             if IsControlPressed(0,`INPUT_FRONTEND_DOWN`) then
-				zValue = zValue - 0.1
+				zValue = zValue - 0.05
             end
 
             if IsPromptCompleted('spooner','INPUT_FRONTEND_ACCEPT') then
@@ -3897,4 +4155,14 @@ function RotateObject(_coord,_center,_angle)
       (_coord.x - _center.x) * math.cos(_angle) - (_coord.y - _center.y) * math.sin(_angle) + _center.x,
       (_coord.x - _center.x) * math.sin(_angle) + (_coord.y - _center.y) * math.cos(_angle) + _center.y
     )
+end
+
+function GetIndexedHashList(List)
+    local NewList = {}
+
+    for _, v in ipairs(List) do
+        NewList[joaat(v)] = v
+    end
+
+    return NewList
 end

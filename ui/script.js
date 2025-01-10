@@ -1105,7 +1105,10 @@ function openDatabase(data,filter) {
 			++totalNetworked;
 		}
 
-		if (!filter || filter == '' || database[handle].name.toLowerCase().includes(filter.toLowerCase())) {
+		if (!filter || 
+			filter == '' || 
+			database[handle].name.toLowerCase().includes(filter.toLowerCase()) || 
+			handle.includes(filter)) {
 			var div = document.createElement('div');
 
 			if (database[handle].isSelf) {
@@ -1656,7 +1659,7 @@ function populatePedConfigFlagsList(flags) {
 
 		var setButton = document.createElement('button');
 		if (flag.value) {
-			setButton.innerHTML = '<i class="fas fa-toggle-on"></i>';
+			setButton.innerHTML = '<i><img src="./img/toggle-on.svg" width="24" height="24"></i>';
 			setButton.addEventListener('click', event => {
 				sendMessage('setPedConfigFlag', {
 					handle: currentEntity(),
@@ -1665,7 +1668,7 @@ function populatePedConfigFlagsList(flags) {
 				}).then(resp => resp.json()).then(resp => populatePedConfigFlagsList(resp));
 			});
 		} else {
-			setButton.innerHTML = '<i class="fas fa-toggle-off"></i>';
+			setButton.innerHTML = '<i><img src="./img/toggle-off.svg" width="24" height="24"></i>';
 			setButton.addEventListener('click', event => {
 				sendMessage('setPedConfigFlag', {
 					handle: currentEntity(),
@@ -2035,7 +2038,8 @@ window.addEventListener('load', function() {
 
 	document.querySelector('#export-db').addEventListener('click', function(event) {
 		sendMessage('exportDb', {
-			format: document.querySelector('#import-export-format').value
+			format: document.querySelector('#import-export-format').value,
+			content: document.querySelector('#import-export-content').value
 		}).then(resp => resp.json()).then(function(resp) {
 			document.querySelector('#import-export-content').value = resp;
 		});
@@ -2485,11 +2489,11 @@ window.addEventListener('load', function() {
 
 		if (active) {
 			this.removeAttribute('data-active');
-			this.innerHTML = '<i class="far fa-star"></i>';
+			this.innerHTML = '<i><img src="./img/star-off.svg" width="24" height="24"></i>';
 			this.style.color = null;
 		} else {
 			this.setAttribute('data-active', '');
-			this.innerHTML = '<i class="fas fa-star"></i>';
+			this.innerHTML = '<i><img src="./img/star.svg" width="24" height="24"></i>';
 			this.style.color = 'gold';
 		}
 
@@ -2538,10 +2542,10 @@ window.addEventListener('load', function() {
 				importButton.disabled = false;
 				break;
 			case 'map-editor-xml':
-				importButton.disabled = true;
+				importButton.disabled = false;
 				break;
 			case 'script':
-				importButton.disabled = true;
+				importButton.disabled = false;
 				break;
 			case 'offset':
 				importButton.disabled = false;
@@ -2664,9 +2668,9 @@ window.addEventListener('load', function() {
 	});
 
 	document.getElementById('copy-model-name').addEventListener('click', function(event) {
-               var modelname = document.getElementById('properties-model').innerText;
-               copyToClipboard(modelname)
-       });
+			var modelname = document.getElementById('properties-model').innerText;
+			copyToClipboard(modelname)
+	});
 
 	document.getElementById('copy-attachment-rotation').addEventListener('click', function(event) {
 		var p = document.getElementById('attachment-pitch').value;
