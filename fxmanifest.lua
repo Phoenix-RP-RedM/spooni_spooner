@@ -5,7 +5,7 @@ lua54 'yes'
 
 author 'Spooni'
 description 'Reworked Entity spawner for RedM'
-version '4'
+version '5'
 
 files {
 	'ui/index.html',
@@ -13,6 +13,8 @@ files {
 	'ui/*.js',
 	'ui/img/*.svg',
 	'ui/fonts/*.ttf',
+	'ui/gizmo/*.js',
+	'ui/gizmo/*.css',
 }
 
 ui_page 'ui/index.html'
@@ -25,6 +27,7 @@ client_scripts {
 	'@Phoenix-Core/[ Utilities ]/Utils.lua',
 	'@Phoenix--UI/[ Client ]/[ Prompt ]/UIPrompt.lua',
 	'client/slaxml.lua',
+	'client/gizmo.lua',
 	'client/client.lua',
 	'data/rdr3/*.lua',
 }
